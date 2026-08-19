@@ -22,34 +22,34 @@
     </h2>
     <form id="budgetForm" class="grid grid-cols-1 md:grid-cols-2 gap-5">
       <div>
-        <label for="title" class="block text-sm font-medium text-gray-300 mb-1.5">  ชื่อรายการ</label>
+        <label for="title" class="block text-sm font-medium text-gray-300 mb-1.5">ชื่อรายการ</label>
         <input type="text" id="title" required maxlength="50" 
                class="w-full bg-gray-950 border border-gray-700 text-gray-100 rounded-lg p-2.5 transition">
       </div>
 
       <div>
-        <label for="amount" class="block text-sm font-medium text-gray-300 mb-1.5">  จำนวนเงิน</label>
+        <label for="amount" class="block text-sm font-medium text-gray-300 mb-1.5">จำนวนเงิน</label>
         <input type="number" id="amount" required min="1" step="any" 
                class="w-full bg-gray-950 border border-gray-700 text-gray-100 rounded-lg p-2.5 transition">
       </div>
 
       <div>
-        <label for="date" class="block text-sm font-medium text-gray-300 mb-1.5">  วันที่</label>
+        <label for="date" class="block text-sm font-medium text-gray-300 mb-1.5">วันที่</label>
         <input type="date" id="date" required 
                class="w-full bg-gray-950 border border-gray-700 text-gray-100 rounded-lg p-2.5 transition">
       </div>
 
       <div>
-        <label for="time" class="block text-sm font-medium text-gray-300 mb-1.5">  เวลา</label>
+        <label for="time" class="block text-sm font-medium text-gray-300 mb-1.5">เวลา</label>
         <input type="time" id="time" required 
                class="w-full bg-gray-950 border border-gray-700 text-gray-100 rounded-lg p-2.5 transition">
       </div>
 
       <div class="md:col-span-2">
-        <label for="type" class="block text-sm font-medium text-gray-300 mb-1.5">  ประเภทรายการ</label>
+        <label for="type" class="block text-sm font-medium text-gray-300 mb-1.5">ประเภทรายการ</label>
         <select id="type" required class="w-full bg-gray-950 border border-gray-700 text-gray-100 rounded-lg p-2.5 transition">
-          <option value="income"> รายรับ</option>
-          <option value="expense"> รายจ่าย</option>
+          <option value="income">รายรับ</option>
+          <option value="expense">รายจ่าย</option>
         </select>
       </div>
 
@@ -62,6 +62,32 @@
         </button>
       </div>
     </form>
+  </section>
+
+  <section class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8 shadow-xl">
+    <h2 class="text-lg font-bold mb-4 text-emerald-400 border-b border-gray-800 pb-3">
+      สรุปยอดเงิน
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+      <div class="summary-card income-card p-4 rounded-xl border">
+        <div class="text-sm font-medium text-gray-400">รายรับรวม</div>
+        <div class="text-xl font-bold text-emerald-400 mt-1">
+          <span id="totalIncome">0</span> บาท
+        </div>
+      </div>
+      <div class="summary-card expense-card p-4 rounded-xl border">
+        <div class="text-sm font-medium text-gray-400">รายจ่ายรวม</div>
+        <div class="text-xl font-bold text-rose-400 mt-1">
+          <span id="totalExpense">0</span> บาท
+        </div>
+      </div>
+      <div class="summary-card balance-card p-4 rounded-xl border">
+        <div class="text-sm font-medium text-gray-400">ยอดคงเหลือ</div>
+        <div class="text-xl font-bold text-sky-400 mt-1">
+          <span id="netBalance">0</span> บาท
+        </div>
+      </div>
+    </div>
   </section>
 
   <section class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-xl">
@@ -81,7 +107,9 @@
     const typeSelect = document.getElementById("type");
     const itemList = document.getElementById("itemList");
 
-    console.log("Initialized Form Elements:", { form, titleInput, amountInput, dateInput, timeInput, typeSelect });
+    const totalIncomeEl = document.getElementById("totalIncome");
+    const totalExpenseEl = document.getElementById("totalExpense");
+    const netBalanceEl = document.getElementById("netBalance");
 
     let transactions = [
       { id: 1, title: "เงินค่าขนม", amount: 1000, date: "2026-08-19", time: "08:00", type: "income" },
@@ -91,15 +119,12 @@
       { id: 5, title: "ซื้ออุปกรณ์การเรียน", amount: 120, date: "2026-08-20", time: "14:00", type: "expense" }
     ];
 
-    console.log("Initial Transactions Array:", transactions);
-
     async function loadInitialData() {
       try {
         const response = await fetch('./budgetfrom.json');
         const data = await response.json();
         if (data.transactions && data.transactions.length > 0) {
           transactions = data.transactions;
-          console.log("Loaded Data from budgetfrom.json successfully:", transactions);
         }
       } catch (error) {
         console.warn("Could not load budgetfrom.json, falling back to default JS Array.", error);
@@ -118,10 +143,9 @@
 
       const netBalance = totalIncome - totalExpense;
 
-      console.log("Summary Calculations:");
-      console.log(" - Total Income:", totalIncome);
-      console.log(" - Total Expense:", totalExpense);
-      console.log(" - Net Balance:", netBalance);
+      if (totalIncomeEl) totalIncomeEl.textContent = totalIncome.toLocaleString();
+      if (totalExpenseEl) totalExpenseEl.textContent = totalExpense.toLocaleString();
+      if (netBalanceEl) netBalanceEl.textContent = netBalance.toLocaleString();
     }
 
     function renderList() {
@@ -178,12 +202,7 @@
       const time = timeInput.value;
       const type = typeSelect.value;
 
-      console.log("--- Form Submitted ---");
-      console.log("Item Title:", title);
-      console.log("Amount:", price);
-
       if (price <= 0 || isNaN(price)) {
-        console.warn("Validation Failed: Invalid amount ->", price);
         alert("กรุณากรอกจำนวนเงินให้ถูกต้อง (ต้องมากกว่า 0)");
         return;
       }
@@ -197,18 +216,13 @@
         type: type
       };
 
-      console.log("Created New Transaction Object:", newTransaction);
       transactions.push(newTransaction);
-      console.log("Updated Transactions Array:", transactions);
-
       form.reset();
       renderList();
     });
 
     function deleteItem(id) {
-      console.log("Deleting Item ID:", id);
       transactions = transactions.filter(item => item.id !== id);
-      console.log("Array After Deletion:", transactions);
       renderList();
     }
 
